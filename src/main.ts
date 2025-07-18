@@ -1,7 +1,7 @@
-import { app, BrowserWindow, dialog } from 'electron';
+import { app, BrowserWindow, dialog, ipcMain } from 'electron';
 import path from 'node:path';
 import started from 'electron-squirrel-startup';
-import { readFile } from 'fs/promises';
+import { readFile, writeFile } from 'fs/promises';
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (started) {
@@ -30,7 +30,6 @@ const createWindow = () => {
   mainWindow.once('ready-to-show', () => {
     mainWindow.show();
     mainWindow.focus();
-    showOpenDialog(mainWindow);
   });
 
   // Open the DevTools.
@@ -71,11 +70,49 @@ const showOpenDialog = async (browserWindow: BrowserWindow) => {
   if (result.canceled) return;
 
   const [filePath] = result.filePaths;
-  openFile(filePath);
+  openFile(browserWindow, filePath);
 };
 
-const openFile = async (filePath: string) => {
+const showExportHtmlDialog = async (
+  browserWindow: BrowserWindow,
+  html: string,
+) => {
+  const result = await dialog.showSaveDialog(browserWindow, {
+    title: 'Export HTML',
+    filters: [{ name: 'HTML File', extensions: ['html'] }],
+  });
+
+  if (result.canceled) return;
+
+  const { filePath } = result;
+
+  if (!filePath) return;
+
+  exportHtml(filePath, html);
+};
+
+const exportHtml = async (filePath: string, html: string) => {
+  await writeFile(filePath, html, { encoding: 'utf-8' });
+};
+
+const openFile = async (browserWindow: BrowserWindow, filePath: string) => {
   const content = await readFile(filePath, { encoding: 'utf-8' });
 
-  console.log('content', content);
+  browserWindow.webContents.send('file-opened', content, filePath);
 };
+
+ipcMain.on('show-open-dialog', (event) => {
+  const browserWindow = BrowserWindow.fromWebContents(event.sender);
+
+  if (!browserWindow) return;
+
+  showOpenDialog(browserWindow);
+});
+
+ipcMain.on('show-export-html-dialog', async (event, html: string) => {
+  const browserWindow = BrowserWindow.fromWebContents(event.sender);
+
+  if (!browserWindow) return;
+
+  showExportHtmlDialog(browserWindow, html);
+});
