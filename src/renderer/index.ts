@@ -14,6 +14,7 @@ Elements.MarkdownView.addEventListener('input', async () => {
   const hasChanges = await window.api.checkForUnsavedChanges(markdown);
 
   Elements.SaveMarkdownButton.disabled = !hasChanges;
+  Elements.RevertButton.disabled = !hasChanges;
 });
 
 Elements.OpenFileButton.addEventListener('click', () => {
@@ -37,4 +38,10 @@ Elements.ShowFileButton.addEventListener('click', () => {
 
 Elements.OpenInDefaultApplicationButton.addEventListener('click', () => {
   window.api.openInDefaultApp();
+});
+
+Elements.RevertButton.addEventListener('click', async () => {
+  const content = await window.api.revertChanges();
+  Elements.MarkdownView.value = content;
+  renderMarkdown(content);
 });

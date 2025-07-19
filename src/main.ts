@@ -214,6 +214,10 @@ ipcMain.on('open-in-default-app', async () => {
   }
 });
 
+ipcMain.handle('revert-changes', async () => {
+  return currentFile.content;
+});
+
 const template: MenuItemConstructorOptions[] = [
   {
     label: 'File',

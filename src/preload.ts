@@ -28,4 +28,7 @@ contextBridge.exposeInMainWorld('api', {
   openInDefaultApp: async () => {
     ipcRenderer.send('open-in-default-app');
   },
+  revertChanges: () => {
+    return ipcRenderer.invoke('revert-changes');
+  },
 });

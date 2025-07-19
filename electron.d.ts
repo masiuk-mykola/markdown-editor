@@ -13,5 +13,6 @@ declare interface Window {
     checkForUnsavedChanges: (content: string) => Promise<boolean>;
     showInFolder: () => void;
     openInDefaultApp: () => void;
+    revertChanges: () => string;
   };
 }
