@@ -1,4 +1,12 @@
-import { app, BrowserWindow, dialog, ipcMain } from 'electron';
+import {
+  app,
+  BrowserWindow,
+  dialog,
+  ipcMain,
+  shell,
+  MenuItemConstructorOptions,
+  Menu,
+} from 'electron';
 import path from 'node:path';
 import started from 'electron-squirrel-startup';
 import { readFile, writeFile } from 'fs/promises';
@@ -68,6 +76,7 @@ const createWindow = () => {
 
   // Open the DevTools.
   mainWindow.webContents.openDevTools();
+  return mainWindow;
 };
 
 // This method will be called when Electron has finished
@@ -192,3 +201,47 @@ ipcMain.handle('has-changes', async (event, content: string) => {
 
   return changed;
 });
+
+ipcMain.on('show-in-folder', async () => {
+  if (currentFile.filePath) {
+    await shell.showItemInFolder(currentFile.filePath);
+  }
+});
+
+ipcMain.on('open-in-default-app', async () => {
+  if (currentFile.filePath) {
+    await shell.openPath(currentFile.filePath);
+  }
+});
+
+const template: MenuItemConstructorOptions[] = [
+  {
+    label: 'File',
+    submenu: [
+      {
+        label: 'Open',
+        click: () => {
+          let browserWindow = BrowserWindow.getFocusedWindow();
+          if (!browserWindow) browserWindow = createWindow();
+          showOpenDialog(browserWindow);
+        },
+        accelerator: 'CmdOrCtrl+O',
+      },
+    ],
+  },
+  {
+    label: 'Edit',
+    role: 'editMenu',
+  },
+];
+
+if (process.platform === 'darwin') {
+  template.unshift({
+    label: app.name,
+    role: 'appMenu',
+  });
+}
+
+const menu = Menu.buildFromTemplate(template);
+
+Menu.setApplicationMenu(menu);

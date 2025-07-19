@@ -22,4 +22,10 @@ contextBridge.exposeInMainWorld('api', {
     const result = await ipcRenderer.invoke('has-changes', content);
     return result;
   },
+  showInFolder: async () => {
+    ipcRenderer.send('show-in-folder');
+  },
+  openInDefaultApp: async () => {
+    ipcRenderer.send('open-in-default-app');
+  },
 });
