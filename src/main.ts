@@ -74,6 +74,31 @@ const createWindow = () => {
     mainWindow.focus();
   });
 
+  mainWindow.on('close', async (event) => {
+    event.preventDefault();
+
+    await mainWindow.webContents.send('check-unsaved-request');
+
+    ipcMain.once('check-unsaved-response', (_e, hasChanges: boolean) => {
+      if (!hasChanges) {
+        mainWindow.destroy();
+      } else {
+        const choice = dialog.showMessageBoxSync(mainWindow, {
+          type: 'question',
+          buttons: ['Quit', 'Cancel'],
+          title: 'Confirmation',
+          message: 'Your changes will not be saved',
+        });
+
+        if (choice === 1) {
+          event.preventDefault();
+        } else {
+          mainWindow.destroy();
+        }
+      }
+    });
+  });
+
   // Open the DevTools.
   mainWindow.webContents.openDevTools();
   return mainWindow;

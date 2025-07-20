@@ -14,5 +14,7 @@ declare interface Window {
     showInFolder: () => void;
     openInDefaultApp: () => void;
     revertChanges: () => string;
+    onCheckUnsavedRequest: (callback: () => void) => void;
+    sendCheckUnsavedResponse: (hasChanges: boolean) => void;
   };
 }

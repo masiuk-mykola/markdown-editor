@@ -31,4 +31,12 @@ contextBridge.exposeInMainWorld('api', {
   revertChanges: () => {
     return ipcRenderer.invoke('revert-changes');
   },
+  onCheckUnsavedRequest: (callback: () => void) => {
+    ipcRenderer.on('check-unsaved-request', () => {
+      callback();
+    });
+  },
+  sendCheckUnsavedResponse: (hasChanges: boolean) => {
+    ipcRenderer.send('check-unsaved-response', hasChanges);
+  },
 });

@@ -45,3 +45,10 @@ Elements.RevertButton.addEventListener('click', async () => {
   Elements.MarkdownView.value = content;
   renderMarkdown(content);
 });
+
+window.api.onCheckUnsavedRequest(async () => {
+  const content = Elements.MarkdownView.value;
+  const hasChanges = await window.api.checkForUnsavedChanges(content);
+
+  window.api.sendCheckUnsavedResponse(hasChanges);
+});
